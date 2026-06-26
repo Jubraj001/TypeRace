@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { generateText } from "@shared/words";
 import { useTyping } from "../engine/useTyping";
-import TypingArea from "../components/TypingArea";
+import TypingField from "../components/TypingField";
 import Results from "../components/Results";
 import { personalBest, saveResult } from "../lib/storage";
 import { clearRaceSession } from "../race/useRaceSocket";
@@ -16,7 +16,6 @@ const WORD_OPTIONS = [10, 25, 50];
 export default function SoloPage() {
   const [mode, setMode] = useState<Mode>({ kind: "words", value: 25 });
   const [seedKey, setSeedKey] = useState(0); // bump to regenerate text
-  const [focused, setFocused] = useState(true);
 
   // Being on the solo page means you've left any multiplayer race — forget the
   // saved session so we never silently auto-rejoin a stale room later.
@@ -51,7 +50,6 @@ export default function SoloPage() {
   const restart = useCallback(() => {
     setSeedKey((k) => k + 1);
     reset();
-    setFocused(true);
   }, [reset]);
 
   // Clicking the typingNinja logo dispatches this — start a fresh test.
@@ -60,32 +58,6 @@ export default function SoloPage() {
     window.addEventListener("typingninja:restart", onRestart);
     return () => window.removeEventListener("typingninja:restart", onRestart);
   }, [restart]);
-
-  // Global key capture.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Tab") {
-        e.preventDefault();
-        restart();
-        return;
-      }
-      if (e.key === "Escape") {
-        restart();
-        return;
-      }
-      setFocused(true);
-      handleKey(e);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [handleKey, restart]);
-
-  // Blur the text if the tab loses focus (Monkeytype-style "click to focus").
-  useEffect(() => {
-    const onBlur = () => setFocused(false);
-    window.addEventListener("blur", onBlur);
-    return () => window.removeEventListener("blur", onBlur);
-  }, []);
 
   if (phase === "done" && result) {
     return (
@@ -103,9 +75,9 @@ export default function SoloPage() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto" onClick={() => setFocused(true)}>
+    <div className="w-full max-w-3xl mx-auto">
       {/* Mode bar */}
-      <div className="flex flex-wrap items-center justify-center gap-1 mb-10 text-sm bg-sub-alt/60 neon-box rounded-lg px-4 py-2 w-fit mx-auto font-display uppercase tracking-wider">
+      <div className="flex flex-wrap items-center justify-center gap-1 mb-8 sm:mb-10 text-xs sm:text-sm bg-sub-alt/60 neon-box rounded-lg px-3 sm:px-4 py-2 w-fit mx-auto font-display uppercase tracking-wider">
         <ModeGroup
           label="time"
           options={TIME_OPTIONS}
@@ -140,25 +112,23 @@ export default function SoloPage() {
         )}
       </div>
 
-      <div className="no-native-caret" tabIndex={0}>
-        <TypingArea
+      <div className="no-native-caret">
+        <TypingField
           target={target}
           typed={typed}
           cursor={cursor}
           active={phase === "running"}
-          focused={focused}
+          onKey={handleKey}
+          onControl={restart}
+          idleHint="tap / click to type"
         />
       </div>
 
-      {!focused && (
-        <div className="text-center text-sub mt-6 text-sm">
-          click here or press any key to focus
-        </div>
-      )}
-
       <div className="text-center text-sub text-xs mt-10">
-        <kbd>tab</kbd> restart · <kbd>esc</kbd> new test
-        {pb != null && <span className="ml-4">best: {pb} wpm</span>}
+        <span className="hidden sm:inline">
+          <kbd>tab</kbd> restart · <kbd>esc</kbd> new test
+        </span>
+        {pb != null && <span className="sm:ml-4">best: {pb} wpm</span>}
       </div>
     </div>
   );

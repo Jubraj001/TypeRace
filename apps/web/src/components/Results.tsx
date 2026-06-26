@@ -15,12 +15,12 @@ export default function Results({ snap, personalBest, onRestart, header }: Props
   return (
     <div className="w-full max-w-3xl mx-auto animate-[fadeIn_0.25s_ease]">
       {header}
-      <div className="flex items-center gap-10">
+      <div className="flex items-center gap-8 sm:gap-10">
         <div>
           <div className="text-accent text-sm font-display uppercase tracking-widest glow-accent">
             wpm
           </div>
-          <div className="font-display text-7xl font-black neon-text leading-none">
+          <div className="font-display text-5xl sm:text-7xl font-black neon-text leading-none">
             {snap.wpm}
           </div>
           {isPB && (
@@ -33,7 +33,7 @@ export default function Results({ snap, personalBest, onRestart, header }: Props
           <div className="text-accent text-sm font-display uppercase tracking-widest glow-accent">
             acc
           </div>
-          <div className="font-display text-7xl font-black neon-text leading-none">
+          <div className="font-display text-5xl sm:text-7xl font-black neon-text leading-none">
             {Math.round(snap.accuracy)}%
           </div>
         </div>

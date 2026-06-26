@@ -81,7 +81,7 @@ export default function RacePage() {
         <div className="text-accent text-xs glow-accent tracking-[0.3em] mb-1">
           リザルト
         </div>
-        <h2 className="font-display text-5xl font-black neon-text uppercase mb-1 flicker">
+        <h2 className="font-display text-3xl sm:text-5xl font-black neon-text uppercase mb-1 flicker">
           race complete
         </h2>
         {me?.rank && (
@@ -410,7 +410,7 @@ function Leaderboard({
 
   return (
     <div className="rounded-lg bg-sub-alt/40 neon-box overflow-hidden text-left">
-      <div className="grid grid-cols-[2.5rem_1fr_4rem_4rem_5rem] gap-2 px-4 py-2 text-xs text-sub font-display uppercase tracking-wider border-b border-sub/30">
+      <div className="grid grid-cols-[1.8rem_1fr_3rem_3rem_3.6rem] sm:grid-cols-[2.5rem_1fr_4rem_4rem_5rem] gap-2 px-4 py-2 text-xs text-sub font-display uppercase tracking-wider border-b border-sub/30">
         <span>#</span>
         <span>racer</span>
         <span className="text-right">wpm</span>
@@ -422,7 +422,7 @@ function Leaderboard({
         return (
           <div
             key={p.id}
-            className={`grid grid-cols-[2.5rem_1fr_4rem_4rem_5rem] gap-2 px-4 py-2.5 items-center font-display ${
+            className={`grid grid-cols-[1.8rem_1fr_3rem_3rem_3.6rem] sm:grid-cols-[2.5rem_1fr_4rem_4rem_5rem] gap-2 px-4 py-2.5 items-center font-display ${
               i === 0 ? "bg-main/10" : ""
             }`}
           >

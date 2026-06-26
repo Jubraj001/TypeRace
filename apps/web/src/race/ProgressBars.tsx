@@ -22,7 +22,7 @@ export default function ProgressBars({ players, textLength, selfId }: Props) {
         const glow = isSelf ? "var(--glow)" : "var(--accent)";
         return (
           <div key={p.id} className="flex items-center gap-3">
-            <div className="w-28 shrink-0 text-sm truncate font-display uppercase tracking-wide">
+            <div className="w-16 sm:w-28 shrink-0 text-xs sm:text-sm truncate font-display uppercase tracking-wide">
               <span
                 className={isSelf ? "neon-text" : "text-accent glow-accent"}
               >

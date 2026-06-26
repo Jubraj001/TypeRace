@@ -12,6 +12,16 @@ export interface TypingSnapshot extends TypingStats {
 
 export type TypingPhase = "idle" | "running" | "done";
 
+/** The subset of a keyboard event the engine actually reads. A real
+ * KeyboardEvent satisfies this, as do the synthetic events from TypingField. */
+export type KeyLike = {
+  key: string;
+  ctrlKey: boolean;
+  metaKey: boolean;
+  altKey: boolean;
+  preventDefault: () => void;
+};
+
 export interface UseTypingResult {
   typed: string;
   phase: TypingPhase;
@@ -45,7 +55,7 @@ export function useTyping({
   timeLimitSec,
   onFinish,
   onProgress,
-}: Options): UseTypingResult & { handleKey: (e: KeyboardEvent) => void } {
+}: Options): UseTypingResult & { handleKey: (e: KeyLike) => void } {
   const [typed, setTyped] = useState("");
   const [phase, setPhase] = useState<TypingPhase>("idle");
   const [live, setLive] = useState<TypingStats>(() =>
@@ -154,7 +164,7 @@ export function useTyping({
   };
 
   const handleKey = useCallback(
-    (e: KeyboardEvent) => {
+    (e: KeyLike) => {
       if (phase === "done") return;
       const t = targetRef.current;
 

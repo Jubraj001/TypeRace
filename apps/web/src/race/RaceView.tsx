@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PlayerPublic, RacePhase } from "@shared/protocol";
 import { useTyping } from "../engine/useTyping";
-import TypingArea from "../components/TypingArea";
+import TypingField from "../components/TypingField";
 import ProgressBars from "./ProgressBars";
 
 interface Props {
@@ -44,14 +44,6 @@ export default function RaceView({
     },
   });
 
-  // Only capture keys while the race is live.
-  useEffect(() => {
-    if (!racing) return;
-    const onKey = (e: KeyboardEvent) => handleKey(e);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [racing, handleKey]);
-
   // Countdown number derived from startAt.
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
@@ -72,7 +64,7 @@ export default function RaceView({
     <div className="w-full max-w-3xl mx-auto">
       {/* live self stats while racing */}
       {racing && (
-        <div className="flex justify-center gap-8 mb-4 font-display">
+        <div className="flex justify-center gap-6 sm:gap-8 mb-4 font-display">
           <Stat label="wpm" value={`${live.wpm}`} />
           <Stat label="time" value={`${(liveElapsedMs / 1000).toFixed(0)}s`} />
           <Stat label="acc" value={`${Math.round(live.accuracy)}%`} />
@@ -86,7 +78,7 @@ export default function RaceView({
       <div className="relative">
         {phase === "countdown" && (
           <div className="absolute inset-0 z-10 flex items-center justify-center">
-            <div className="font-display text-8xl font-black neon-text animate-pulse">
+            <div className="font-display text-6xl sm:text-8xl font-black neon-text animate-pulse">
               {count === 0 ? "GO!" : count}
             </div>
           </div>
@@ -96,7 +88,7 @@ export default function RaceView({
         {selfFinished && racing && (
           <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm bg-bg/50 rounded-lg">
             <div className="text-center animate-[fadeIn_0.3s_ease]">
-              <div className="font-display text-5xl font-black neon-text uppercase">
+              <div className="font-display text-3xl sm:text-5xl font-black neon-text uppercase">
                 finished {self?.rank ? `· ${ordinal(self.rank)}` : ""}
               </div>
               <div className="text-accent glow-accent font-display mt-2 tracking-wider">
@@ -113,12 +105,14 @@ export default function RaceView({
           className="no-native-caret"
           style={{ opacity: racing && !selfFinished ? 1 : 0.35 }}
         >
-          <TypingArea
+          <TypingField
             target={text}
             typed={typed}
             cursor={cursor}
             active={typingPhase === "running"}
-            focused={true}
+            // ignore input until the race is live and before you finish
+            onKey={racing && !selfFinished ? handleKey : () => {}}
+            idleHint={racing ? "tap to type" : ""}
           />
         </div>
       </div>
@@ -150,7 +144,7 @@ export default function RaceView({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-center">
-      <div className="text-3xl neon-text tabular-nums leading-none">{value}</div>
+      <div className="text-2xl sm:text-3xl neon-text tabular-nums leading-none">{value}</div>
       <div className="text-sub text-xs uppercase tracking-widest mt-1">{label}</div>
     </div>
   );
