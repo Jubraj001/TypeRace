@@ -51,7 +51,15 @@ export default function SoloPage() {
   const restart = useCallback(() => {
     setSeedKey((k) => k + 1);
     reset();
+    setFocused(true);
   }, [reset]);
+
+  // Clicking the TYPERACE logo dispatches this — start a fresh test.
+  useEffect(() => {
+    const onRestart = () => restart();
+    window.addEventListener("typerace:restart", onRestart);
+    return () => window.removeEventListener("typerace:restart", onRestart);
+  }, [restart]);
 
   // Global key capture.
   useEffect(() => {

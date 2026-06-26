@@ -17,7 +17,16 @@ export default function App() {
   return (
     <div className="min-h-full flex flex-col">
       <header className="flex items-center justify-between px-6 py-4 max-w-5xl w-full mx-auto">
-        <Link to="/" className="flex items-baseline gap-2 group">
+        <Link
+          to="/"
+          onClick={() => {
+            // Monkeytype-style: clicking the logo always starts a fresh test.
+            // The Link handles navigation when elsewhere; this event tells the
+            // solo page to restart when we're already on it.
+            window.dispatchEvent(new Event("typerace:restart"));
+          }}
+          className="flex items-baseline gap-2 group"
+        >
           <span className="font-display neon-text text-2xl font-black uppercase flicker">
             TYPERACE
           </span>
