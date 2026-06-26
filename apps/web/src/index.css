@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Retro-anime / cyberpunk theme tokens.
+   Switchable via [data-theme] on <html>.
+   --main = primary neon, --accent = secondary neon, --glow = halo color.
+   ============================================================ */
+:root,
+[data-theme="neon-tokyo"] {
+  --bg: #070b16;
+  --bg2: #0e1530;
+  --sub: #46527e;
+  --sub-alt: #141c38;
+  --text: #dbe7ff;
+  --main: #ff2d7e;
+  --accent: #19e7ff;
+  --error: #ff4d4d;
+  --caret: #19e7ff;
+  --glow: 255, 45, 126;
+}
+
+[data-theme="synthwave"] {
+  --bg: #160a2b;
+  --bg2: #2a1149;
+  --sub: #6b4a8f;
+  --sub-alt: #271341;
+  --text: #f6d9ff;
+  --main: #ff5cad;
+  --accent: #00e0ff;
+  --error: #ff5470;
+  --caret: #ffd23f;
+  --glow: 255, 92, 173;
+}
+
+[data-theme="akira"] {
+  --bg: #0a0606;
+  --bg2: #1a0808;
+  --sub: #7a4a4a;
+  --sub-alt: #1f0e0e;
+  --text: #ffe0d6;
+  --main: #ff1e2d;
+  --accent: #ff8a00;
+  --error: #ffcc00;
+  --caret: #ff8a00;
+  --glow: 255, 30, 45;
+}
+
+[data-theme="matrix"] {
+  --bg: #020a05;
+  --bg2: #04140a;
+  --sub: #2f6b46;
+  --sub-alt: #07180e;
+  --text: #c8ffd8;
+  --main: #00ff66;
+  --accent: #6cff9e;
+  --error: #ffe24d;
+  --caret: #00ff66;
+  --glow: 0, 255, 102;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sub: var(--sub);
+  --color-sub-alt: var(--sub-alt);
+  --color-text: var(--text);
+  --color-main: var(--main);
+  --color-accent: var(--accent);
+  --color-error: var(--error);
+  --font-mono: "Share Tech Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: "Orbitron", var(--font-mono);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  /* layered cyberpunk backdrop: vignette glow + deep gradient */
+  background:
+    radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--main) 14%, transparent), transparent 60%),
+    radial-gradient(100% 80% at 100% 110%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 55%),
+    linear-gradient(160deg, var(--bg2), var(--bg));
+  background-attachment: fixed;
+  transition: color 0.25s ease;
+}
+
+/* perspective neon grid floor */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 22%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 55%, black 130%);
+  mask-image: linear-gradient(to bottom, transparent 55%, black 130%);
+  opacity: 0.35;
+}
+
+/* CRT scanlines on top */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+#root {
+  position: relative;
+  z-index: 2;
+}
+
+::selection {
+  background: var(--main);
+  color: var(--bg);
+}
+
+.no-native-caret {
+  caret-color: transparent;
+}
+
+/* ---- utility classes ---- */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}
+
+.neon-text {
+  color: var(--main);
+  text-shadow:
+    0 0 6px rgba(var(--glow), 0.7),
+    0 0 18px rgba(var(--glow), 0.4);
+}
+
+.neon-box {
+  border: 1px solid color-mix(in srgb, var(--main) 55%, transparent);
+  box-shadow:
+    0 0 8px rgba(var(--glow), 0.35),
+    inset 0 0 12px color-mix(in srgb, var(--main) 8%, transparent);
+}
+
+.glow-accent {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* ---- caret ---- */
+.race-caret {
+  background: var(--caret);
+  border-radius: 2px;
+  box-shadow:
+    0 0 6px var(--caret),
+    0 0 14px color-mix(in srgb, var(--caret) 70%, transparent);
+  /* smooth glide: easeOutExpo-ish, GPU-composited */
+  transition: transform 130ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 130ms ease, opacity 120ms ease;
+  will-change: transform;
+}
+
+@keyframes caret-blink {
+  0%, 45% { opacity: 1; }
+  55%, 95% { opacity: 0.15; }
+  100% { opacity: 1; }
+}
+.caret-blink {
+  animation: caret-blink 1.05s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.4; }
+  94% { opacity: 1; }
+  97% { opacity: 0.7; }
+}
+.flicker {
+  animation: flicker 6s infinite;
+}
+
+kbd {
+  background: var(--sub-alt);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.85em;
+  color: var(--accent);
+}

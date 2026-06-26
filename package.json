@@ -1,0 +1,19 @@
+{
+  "name": "typing",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Monkeytype-style typing test with realtime multiplayer racing",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n web,server -c cyan,magenta \"npm:dev:web\" \"npm:dev:server\"",
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:server": "npm --prefix apps/server run dev",
+    "install:all": "npm install && npm --prefix apps/web install && npm --prefix apps/server install",
+    "build": "npm --prefix apps/web run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

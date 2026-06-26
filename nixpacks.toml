@@ -1,0 +1,14 @@
+# Railway build for the multiplayer race server (apps/server).
+# Keep the Railway service "Root Directory" at the REPO ROOT — the server
+# imports ../../shared, which lives outside apps/server.
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = [
+  "npm install",
+  "npm --prefix apps/server install",
+]
+
+[start]
+cmd = "npm --prefix apps/server start"
