@@ -40,7 +40,7 @@ export default function Results({ snap, personalBest, onRestart, header }: Props
       </div>
 
       <div className="mt-6 rounded-lg bg-sub-alt/40 neon-box p-4">
-        <WpmChart samples={snap.samples} />
+        <WpmChart samples={snap.samples} errors={snap.errors} />
       </div>
 
       <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
