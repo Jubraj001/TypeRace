@@ -62,10 +62,16 @@ VITE_RACE_SERVER = wss://<your-railway-server>.up.railway.app
 Use `wss://` (secure) — a browser on an `https://` page blocks plain `ws://`.
 
 ### Server → Railway
-Create a service from the same repo, **Root Directory = repo root**
-(`nixpacks.toml` builds and starts `apps/server`). Railway injects `PORT` and
-gives you a public `wss://` URL — paste that into Vercel's `VITE_RACE_SERVER`
-and redeploy the frontend.
+Create a service from the same repo, **Root Directory = repo root**. Railway's
+default builder (Railpack) uses the root `package.json`:
+- `postinstall` installs `apps/server`'s deps during the normal `npm install`
+- `start` runs the race server (`apps/server`)
+
+Railway injects `PORT` and gives you a public `wss://` URL — paste that into
+Vercel's `VITE_RACE_SERVER` and redeploy the frontend.
+
+> `nixpacks.toml` is kept as a fallback if you switch the builder to Nixpacks;
+> with the default Railpack builder it's ignored and the root scripts are used.
 
 ## Project layout
 ```
