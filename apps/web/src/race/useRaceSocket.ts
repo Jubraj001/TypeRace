@@ -8,6 +8,10 @@ import type {
 const SERVER_URL =
   import.meta.env.VITE_RACE_SERVER ?? "ws://localhost:8787";
 
+// Surfaces which URL this build is actually using — helps confirm the
+// VITE_RACE_SERVER env var was inlined at build time.
+console.info("[typerace] race server:", SERVER_URL);
+
 const SESSION_KEY = "typerace:session"; // { code, playerId }
 
 interface Session {

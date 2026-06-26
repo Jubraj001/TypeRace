@@ -89,3 +89,5 @@ The server is authoritative on the race text and start time. Each client compute
 its own WPM and sends throttled `progress` updates; the server fans them out to
 the room so everyone sees live bars. No accounts in v1 — players use a temporary
 display name, stats persist locally in the browser.
+
+## Thanks!
