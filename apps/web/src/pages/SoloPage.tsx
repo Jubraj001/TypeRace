@@ -54,11 +54,11 @@ export default function SoloPage() {
     setFocused(true);
   }, [reset]);
 
-  // Clicking the TYPERACE logo dispatches this — start a fresh test.
+  // Clicking the typingNinja logo dispatches this — start a fresh test.
   useEffect(() => {
     const onRestart = () => restart();
-    window.addEventListener("typerace:restart", onRestart);
-    return () => window.removeEventListener("typerace:restart", onRestart);
+    window.addEventListener("typingninja:restart", onRestart);
+    return () => window.removeEventListener("typingninja:restart", onRestart);
   }, [restart]);
 
   // Global key capture.

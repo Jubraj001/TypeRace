@@ -17,7 +17,7 @@ interface Conn {
 }
 
 const wss = new WebSocketServer({ port: PORT });
-console.log(`[typerace] race server listening on ws://localhost:${PORT}`);
+console.log(`[typingNinja] race server listening on ws://localhost:${PORT}`);
 
 wss.on("connection", (socket: WebSocket) => {
   const ctx: Conn = { playerId: null, room: null };

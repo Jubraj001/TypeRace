@@ -1,4 +1,4 @@
-# typerace
+# typingNinja
 
 A fast, crisp Monkeytype-style typing test with realtime multiplayer racing.
 Share a link and race anyone live.

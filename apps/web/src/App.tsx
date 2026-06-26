@@ -23,15 +23,16 @@ export default function App() {
             // Monkeytype-style: clicking the logo always starts a fresh test.
             // The Link handles navigation when elsewhere; this event tells the
             // solo page to restart when we're already on it.
-            window.dispatchEvent(new Event("typerace:restart"));
+            window.dispatchEvent(new Event("typingninja:restart"));
           }}
           className="flex items-baseline gap-2 group"
         >
-          <span className="font-display neon-text text-2xl font-black uppercase flicker">
-            TYPERACE
+          <span className="font-display text-2xl font-black flicker">
+            <span className="neon-text">typing</span>
+            <span className="text-accent glow-accent">Ninja</span>
           </span>
           <span className="text-accent text-xs glow-accent tracking-widest">
-            タイプレース
+            タイピング忍者
           </span>
         </Link>
         <nav className="flex items-center gap-5 text-sm font-display uppercase tracking-wider">

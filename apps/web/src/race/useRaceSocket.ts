@@ -10,7 +10,7 @@ const SERVER_URL =
 
 // Surfaces which URL this build is actually using — helps confirm the
 // VITE_RACE_SERVER env var was inlined at build time.
-console.info("[typerace] race server:", SERVER_URL);
+console.info("[typingNinja] race server:", SERVER_URL);
 
 const SESSION_KEY = "typerace:session"; // { code, playerId }
 
