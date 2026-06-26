@@ -168,9 +168,12 @@ body::after {
   box-shadow:
     0 0 6px var(--caret),
     0 0 14px color-mix(in srgb, var(--caret) 70%, transparent);
-  /* movement is driven by a JS rAF lerp (see TypingArea) — no CSS transition on
-     transform/height or it would fight the lerp. opacity is still CSS (blink). */
-  transition: opacity 120ms ease;
+  /* smooth decelerating glide between characters (easeOutCubic). Longer than a
+     snap so the motion reads as a glide, short enough to keep up with typing. */
+  transition:
+    transform 0.16s cubic-bezier(0.33, 1, 0.68, 1),
+    height 0.16s ease,
+    opacity 120ms ease;
   will-change: transform;
 }
 
