@@ -125,13 +125,20 @@ export function useTyping({
       if (phase === "done") return;
       const t = targetRef.current;
 
-      // Backspace
+      // Backspace (with mac/word/line variants)
       if (e.key === "Backspace") {
         e.preventDefault();
-        if (typedRef.current.length > 0) {
+        if (typedRef.current.length === 0) return;
+        if (e.metaKey) {
+          // ⌘+Backspace → delete back to the start (mac "delete line")
+          typedRef.current = "";
+        } else if (e.altKey || e.ctrlKey) {
+          // ⌥/Ctrl+Backspace → delete the previous word
+          typedRef.current = deletePrevWord(typedRef.current);
+        } else {
           typedRef.current = typedRef.current.slice(0, -1);
-          setTyped(typedRef.current);
         }
+        setTyped(typedRef.current);
         return;
       }
 
@@ -185,4 +192,12 @@ export function useTyping({
 
 function nowMs(): number {
   return performance.now();
+}
+
+/** Remove the trailing word: any trailing spaces, then the word before them. */
+function deletePrevWord(s: string): string {
+  let i = s.length;
+  while (i > 0 && s[i - 1] === " ") i--;
+  while (i > 0 && s[i - 1] !== " ") i--;
+  return s.slice(0, i);
 }

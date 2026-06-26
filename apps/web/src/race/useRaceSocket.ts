@@ -32,6 +32,8 @@ export interface RaceSocket {
   sendProgress: (progress: number, wpm: number) => void;
   sendFinish: (wpm: number, accuracy: number) => void;
   clearError: () => void;
+  /** Forget the saved session so we don't auto-rejoin after navigating away. */
+  leaveRace: () => void;
 }
 
 /**
@@ -148,6 +150,12 @@ export function useRaceSocket(code: string | undefined, name: string): RaceSocke
 
   const clearError = useCallback(() => setError(null), []);
 
+  // Clearing the session means the next mount on this room code won't rejoin.
+  // The actual socket is closed by the effect cleanup when RacePage unmounts.
+  const leaveRace = useCallback(() => {
+    clearRaceSession();
+  }, []);
+
   return {
     connected,
     state,
@@ -161,7 +169,13 @@ export function useRaceSocket(code: string | undefined, name: string): RaceSocke
     sendProgress,
     sendFinish,
     clearError,
+    leaveRace,
   };
+}
+
+/** Forget any saved race session (used when the user returns to solo). */
+export function clearRaceSession(): void {
+  sessionStorage.removeItem(SESSION_KEY);
 }
 
 function loadSession(): Session | null {

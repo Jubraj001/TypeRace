@@ -37,11 +37,17 @@ b.send({ t: "join", code, name: "Bob" });
 await wait(200);
 log("players after join:", a.state.players.map((p) => p.name).join(", "));
 
-// Both ready -> auto countdown
-a.send({ t: "ready", ready: true });
+// Host start should be a no-op until the non-host (Bob) is ready.
+a.send({ t: "start" });
+await wait(150);
+log("phase after host start with Bob not ready (should be lobby):", a.state.phase);
+
+// Bob readies, then host starts -> countdown
 b.send({ t: "ready", ready: true });
+await wait(150);
+a.send({ t: "start" });
 await wait(300);
-log("phase after both ready:", a.state.phase, "| startAt set:", a.state.startAt != null);
+log("phase after Bob ready + host start:", a.state.phase, "| startAt set:", a.state.startAt != null);
 
 // wait for countdown -> racing
 await wait(4200);
@@ -65,6 +71,8 @@ const ranks = a.state.players
   .map((p) => `${p.name}#${p.rank}(${p.wpm}wpm)`)
   .join(", ");
 log("final phase:", a.state.phase, "| ranks:", ranks);
+const alice = a.state.players.find((p) => p.name === "Alice");
+log("Alice result fields:", { acc: alice.accuracy, timeMs: alice.timeMs != null });
 
 // rematch by host (Alice)
 a.send({ t: "rematch" });
@@ -75,7 +83,9 @@ const ok =
   a.state.phase === "lobby" &&
   ranks.includes("Alice#1") &&
   ranks.includes("Bob#2") &&
-  aliceBar === 20;
+  aliceBar === 20 &&
+  alice.accuracy === 98 &&
+  alice.timeMs != null;
 log(ok ? "\n✅ E2E SMOKE PASSED" : "\n❌ E2E SMOKE FAILED");
 
 a.ws.close();

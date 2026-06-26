@@ -16,6 +16,7 @@ interface Player {
   accuracy: number;
   rank: number | null;
   finished: boolean;
+  timeMs: number | null;
   connected: boolean;
   socket: WebSocket | null;
 }
@@ -52,6 +53,7 @@ export class Room {
       accuracy: 100,
       rank: null,
       finished: false,
+      timeMs: null,
       connected: true,
       socket,
     };
@@ -67,13 +69,19 @@ export class Room {
     p.connected = true;
     p.socket = socket;
     if (name) p.name = name.slice(0, 24);
+    // If the room currently has no host (e.g. the host's socket dropped during a
+    // create→navigate reconnect, or the host left and is now back), reclaim it.
+    if (this.hostId === null) this.hostId = id;
     this.touch();
     return p;
   }
 
-  markDisconnected(id: string) {
+  markDisconnected(id: string, socket?: WebSocket) {
     const p = this.players.get(id);
     if (!p) return;
+    // Ignore a stale close from an old socket after the player already
+    // reconnected on a new one (create→navigate reconnect race).
+    if (socket && p.socket && p.socket !== socket) return;
     p.connected = false;
     p.socket = null;
     // If host left, promote another connected player.
@@ -89,27 +97,26 @@ export class Room {
     if (!p || this.phase !== "lobby") return;
     p.ready = ready;
     this.touch();
-    this.maybeAutoStart();
+    // No auto-start — only the host starts the race (see forceStart).
   }
 
-  /** Auto-start once >=2 connected players are all ready. */
-  private maybeAutoStart() {
+  /**
+   * Can the race be started? Requires 2+ connected players and every
+   * non-host connected player to be ready. (The host's click is the go signal,
+   * so the host doesn't need to ready up themselves.)
+   */
+  canStart(): boolean {
     const connected = [...this.players.values()].filter((p) => p.connected);
-    if (
-      this.phase === "lobby" &&
-      connected.length >= 2 &&
-      connected.every((p) => p.ready)
-    ) {
-      this.beginCountdown();
-    }
+    if (connected.length < 2) return false;
+    return connected
+      .filter((p) => p.id !== this.hostId)
+      .every((p) => p.ready);
   }
 
-  /** Host may force-start even solo (for practice) or before everyone readies. */
+  /** Only the host starts, and only once everyone else is ready. */
   forceStart(id: string) {
     if (id !== this.hostId || this.phase !== "lobby") return;
-    if ([...this.players.values()].some((p) => p.connected)) {
-      this.beginCountdown();
-    }
+    if (this.canStart()) this.beginCountdown();
   }
 
   private beginCountdown() {
@@ -141,6 +148,7 @@ export class Room {
     p.finished = true;
     p.wpm = Math.round(wpm);
     p.accuracy = Math.round(accuracy);
+    p.timeMs = this.startAt ? Math.max(0, Date.now() - this.startAt) : null;
     p.rank = ++this.finishCount;
     this.touch();
     this.broadcastState();
@@ -171,8 +179,10 @@ export class Room {
       p.ready = false;
       p.progress = 0;
       p.wpm = 0;
+      p.accuracy = 100;
       p.rank = null;
       p.finished = false;
+      p.timeMs = null;
     }
     this.broadcastState();
     this.touch();
@@ -203,6 +213,8 @@ export class Room {
       isHost: p.id === this.hostId,
       progress: p.progress,
       wpm: p.wpm,
+      accuracy: p.accuracy,
+      timeMs: p.timeMs,
       rank: p.rank,
       finished: p.finished,
       connected: p.connected,

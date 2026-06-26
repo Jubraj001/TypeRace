@@ -168,9 +168,9 @@ body::after {
   box-shadow:
     0 0 6px var(--caret),
     0 0 14px color-mix(in srgb, var(--caret) 70%, transparent);
-  /* smooth glide: easeOutExpo-ish, GPU-composited */
-  transition: transform 130ms cubic-bezier(0.16, 1, 0.3, 1),
-    height 130ms ease, opacity 120ms ease;
+  /* movement is driven by a JS rAF lerp (see TypingArea) — no CSS transition on
+     transform/height or it would fight the lerp. opacity is still CSS (blink). */
+  transition: opacity 120ms ease;
   will-change: transform;
 }
 

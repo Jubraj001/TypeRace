@@ -4,6 +4,7 @@ import { useTyping } from "../engine/useTyping";
 import TypingArea from "../components/TypingArea";
 import Results from "../components/Results";
 import { personalBest, saveResult } from "../lib/storage";
+import { clearRaceSession } from "../race/useRaceSocket";
 
 type Mode =
   | { kind: "time"; value: number }
@@ -16,6 +17,12 @@ export default function SoloPage() {
   const [mode, setMode] = useState<Mode>({ kind: "words", value: 25 });
   const [seedKey, setSeedKey] = useState(0); // bump to regenerate text
   const [focused, setFocused] = useState(true);
+
+  // Being on the solo page means you've left any multiplayer race — forget the
+  // saved session so we never silently auto-rejoin a stale room later.
+  useEffect(() => {
+    clearRaceSession();
+  }, []);
 
   // For time mode, supply a generous buffer of words.
   const wordCount = mode.kind === "words" ? mode.value : 80;

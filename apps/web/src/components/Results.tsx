@@ -1,5 +1,6 @@
 import type { TypingSnapshot } from "../engine/useTyping";
 import WpmChart from "./WpmChart";
+import TypingGif from "./TypingGif";
 
 interface Props {
   snap: TypingSnapshot;
@@ -60,6 +61,11 @@ export default function Results({ snap, personalBest, onRestart, header }: Props
           next ▸ <kbd className="text-xs ml-2">tab</kbd>
         </button>
       </div>
+
+      <TypingGif
+        caption={snap.wpm >= 80 ? "smokin' keys 🔥" : "those fingers, baby!"}
+        className="mt-10 opacity-90"
+      />
     </div>
   );
 }

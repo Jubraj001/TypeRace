@@ -34,7 +34,7 @@ wss.on("connection", (socket: WebSocket) => {
 
   socket.on("close", () => {
     if (ctx.room && ctx.playerId) {
-      ctx.room.markDisconnected(ctx.playerId);
+      ctx.room.markDisconnected(ctx.playerId, socket);
       ctx.room.broadcastState();
     }
   });

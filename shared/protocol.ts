@@ -12,6 +12,10 @@ export interface PlayerPublic {
   /** chars correctly typed so far (used to drive the progress bar) */
   progress: number;
   wpm: number;
+  /** accuracy %, finalized on finish (100 until then) */
+  accuracy: number;
+  /** ms from race start to finishing; null until the player finishes */
+  timeMs: number | null;
   /** finishing rank, 1-based; null until the player finishes */
   rank: number | null;
   finished: boolean;

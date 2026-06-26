@@ -21,52 +21,107 @@ interface Props {
  *  - The whole component is memoized; the rAF-driven WPM counter in the parent
  *    re-renders every frame but must NOT re-render the ~180 char spans here.
  */
+interface Pos {
+  x: number;
+  y: number;
+  h: number;
+}
+
 function TypingArea({ target, typed, cursor, active, focused }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const caretRef = useRef<HTMLSpanElement>(null);
   const charRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  // Caret animation state — interpolated every frame toward `goal`.
+  const goalRef = useRef<Pos>({ x: 0, y: 0, h: 0 });
+  const curRef = useRef<Pos>({ x: 0, y: 0, h: 0 });
+  const rafRef = useRef<number | null>(null);
   const placedRef = useRef(false);
 
   const statuses = charStatuses(target, typed);
 
-  const positionCaret = (animate: boolean) => {
+  // Measure where the caret should be for the current cursor.
+  const measureGoal = (): Pos | null => {
     const container = containerRef.current;
-    const caret = caretRef.current;
-    if (!container || !caret) return;
-
+    if (!container) return null;
     const atEnd = cursor >= target.length;
     const el = charRefs.current[cursor] ?? charRefs.current[target.length - 1];
-    if (!el) return;
-
+    if (!el) return null;
     const cRect = container.getBoundingClientRect();
     const r = el.getBoundingClientRect();
-    const x = (atEnd ? r.right : r.left) - cRect.left;
-    const h = r.height * 0.78;
-    const y = r.top - cRect.top + r.height * 0.11;
-
-    // disable the transition for the very first placement (and on resize jumps)
-    caret.style.transition = animate ? "" : "none";
-    caret.style.height = `${h}px`;
-    caret.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    if (!animate) {
-      // force reflow so the next move animates from here
-      void caret.offsetWidth;
-      caret.style.transition = "";
-    }
+    return {
+      x: (atEnd ? r.right : r.left) - cRect.left,
+      y: r.top - cRect.top + r.height * 0.11,
+      h: r.height * 0.78,
+    };
   };
 
-  // Reposition on every cursor move. useLayoutEffect = before paint, no flicker.
+  const writeCaret = (p: Pos) => {
+    const caret = caretRef.current;
+    if (!caret) return;
+    caret.style.height = `${p.h}px`;
+    caret.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+  };
+
+  // rAF lerp: glides current → goal with a fixed easing factor each frame.
+  // This is frame-rate-paced and independent of React renders, so fast typing
+  // never makes the caret jump or stutter.
+  const animate = () => {
+    const cur = curRef.current;
+    const goal = goalRef.current;
+    const dx = goal.x - cur.x;
+    const dy = goal.y - cur.y;
+    const dh = goal.h - cur.h;
+    const dist = Math.abs(dx) + Math.abs(dy) + Math.abs(dh);
+
+    if (dist < 0.4) {
+      curRef.current = { ...goal };
+      writeCaret(goal);
+      rafRef.current = null; // settle: stop the loop until the next move
+      return;
+    }
+    const k = 0.32; // smoothing — higher = snappier, lower = glidier
+    cur.x += dx * k;
+    cur.y += dy * k;
+    cur.h += dh * k;
+    writeCaret(cur);
+    rafRef.current = requestAnimationFrame(animate);
+  };
+
+  const kick = () => {
+    if (rafRef.current == null) rafRef.current = requestAnimationFrame(animate);
+  };
+
+  // On cursor/target change: recompute goal, then either snap (first placement)
+  // or kick off the lerp toward it.
   useLayoutEffect(() => {
-    positionCaret(placedRef.current);
-    placedRef.current = true;
+    const goal = measureGoal();
+    if (!goal) return;
+    goalRef.current = goal;
+    if (!placedRef.current) {
+      curRef.current = { ...goal };
+      writeCaret(goal);
+      placedRef.current = true;
+    } else {
+      kick();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursor, target]);
 
-  // Reposition (without animating) when the line layout changes on resize.
+  // On resize the line layout changes — snap the caret to avoid a wild glide.
   useEffect(() => {
-    const onResize = () => positionCaret(false);
+    const onResize = () => {
+      const goal = measureGoal();
+      if (!goal) return;
+      goalRef.current = goal;
+      curRef.current = { ...goal };
+      writeCaret(goal);
+    };
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursor, target]);
 
@@ -147,9 +202,10 @@ function Words({
 }
 
 function charClass(s: ReturnType<typeof charStatuses>[number]): string {
-  if (s === "correct") return "text-text [text-shadow:0_0_8px_rgba(255,255,255,0.18)]";
-  if (s === "incorrect")
-    return "text-error underline decoration-error/70 [text-shadow:0_0_8px_var(--error)]";
+  // No per-char glow on correct text — text-shadow on ~180 chars repainted each
+  // keystroke is a real cost and made the caret stutter. Keep it crisp instead.
+  if (s === "correct") return "text-text";
+  if (s === "incorrect") return "text-error underline decoration-error/70";
   return "text-sub";
 }
 
